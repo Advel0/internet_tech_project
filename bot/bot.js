@@ -188,3 +188,6 @@ const handleInput = (input) => {
   rl.on('close', () => {
     process.exit(0);
   })
+
+
+  exports.ChatBot = ChatBot

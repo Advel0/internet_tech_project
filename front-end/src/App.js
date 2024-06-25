@@ -1,26 +1,46 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import io from 'socket.io-client'
 import './App.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
+const socket = io.connect("http://localhost:3000/")
+
 const App = () => {
   const [messages, setMessages] = useState([]);
+  const [messagesRecieved, setMessagesRecieved] = useState([]);
   const [input, setInput] = useState('');
 
   const findResponse = (message) => {
     return "Sorry, I don't understand that.";
   };
 
-  const handleSend = () => {
+  const handleSend =  () => {
     if (!input.trim()) return;
 
     const userMessage = { sender: 'user', text: input };
-    setMessages([...messages, userMessage]);
+    // setMessages([...messages, userMessage]);
 
     const botResponse = findResponse(input);
     const botMessage = { sender: 'bot', text: botResponse };
-    setMessages([...messages, userMessage, botMessage]);
+    // setMessages([...messages, userMessage, botMessage]);
+    console.log(messages)
     setInput('');
+
+    socket.emit("send_msg", {message:input})
   };
+
+  useEffect(()=>{
+    socket.on('recieve_bot_response',(data)=>{
+      const userMessage = { sender: 'user', text: data.user_message };
+      const botMessage = { sender: 'bot', text: data.bot_message };
+
+      console.log(userMessage, botMessage)
+
+      setMessages(prevMessages =>[...prevMessages, userMessage, botMessage])
+    })
+  }, [])
+
+  
 
   return (
     <div id="main">
